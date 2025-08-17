@@ -1,0 +1,35 @@
+endermite:
+  enabled: false
+  spawn-chance: 0.05  # 5%
+
+cooldowns:
+  shield:
+    enabled: false
+    ticks: 200  # 10 Sekunden
+  enderpearl:
+    enabled: false
+    ticks: 100
+  windcharge:
+    enabled: false
+    ticks: 200
+  corusfruit:
+    enabled: false
+    ticks: 100
+
+potion-durations:
+  enabled: false
+  overwrite:
+    strength: 3600
+    strong_strength: 2400
+    long_strength: 7200
+
+impaling-rework:
+  enabled: false
+  mode: bedrock # Possible values: bedrock, combattest
+
+item-damage:
+  explosion: true
+  fire: true
+  lava: true
+  cactus: true
+  lightning: true
