@@ -16,14 +16,8 @@ cooldowns:
     enabled: false
     ticks: 100
 
-potion-durations:
-  enabled: false
-  overwrite:
-    strength: 3600
-    strong_strength: 2400
-    long_strength: 7200
-
 impaling-rework:
+  # Rework changes https://minecraft.wiki/w/Impaling
   enabled: false
   mode: bedrock # Possible values: bedrock, combattest
 
@@ -33,3 +27,65 @@ item-damage:
   lava: true
   cactus: true
   lightning: true
+
+recipes:
+  cobweb:
+    enabled: false
+    item: COBWEB
+    replace-vanilla: true
+    amount: 1
+    shape:
+      - "SSS"
+      - "S S"
+      - "SSS"
+    ingredients:
+      S: STRING
+
+  golden_apple:
+    enabled: false
+    item: GOLDEN_APPLE
+    amount: 1
+    replace-vanilla: true
+    shape:
+      - "GGG"
+      - "GAG"
+      - "GGG"
+    ingredients:
+      G: GOLD_INGOT
+      A: APPLE
+
+
+unbreakable-anvils: false
+
+villager:
+  infinite: false
+
+mace-control:
+  enabled: false
+  damage:
+    # Damage multiplier (1.5 = +50% damage, 0.5 = half damage)
+    multiplier: 1.0
+
+  # Crafting limits can be bypassed with "vanillachanges.macecontrol.bypass.craftinglimit" permission
+  crafting:
+    # Enabling this automatically disables crafters crafting mace's
+    enabled: false
+
+    # Global mace crafting limit for the whole server
+    max-total: 5
+    mace-crafted-broadcast: "<yellow><player> has crafted a <bold>Mace</bold>!"
+
+  # Enchant limits can be bypassed with "vanillachanges.macecontrol.bypass.enchantlimit" permission
+  enchant-limits:
+    # Max enchant levels for mace
+    density: 5
+    wind_burst: 2
+
+farmland:
+  # Enables/disables the farmland protection feature
+  enabled: false
+
+  # Mode options:
+  # ALWAYS          -> farmland can never be trampled
+  # FEATHER_FALLING -> farmland is protected only if player has Feather Falling
+  mode: FEATHER_FALLING

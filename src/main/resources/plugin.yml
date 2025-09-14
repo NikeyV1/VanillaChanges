@@ -1,10 +1,19 @@
 name: VanillaChanges
-version: 1.0
+version: 1.1
 main: de.nikey.vanillaChanges.VanillaChanges
 api-version: 1.21
 authors: [ Nikey ]
 website: https://github.com/NikeyV1
+
 commands:
   vanillachanges:
     description: Main command
     usage: /<vanillachanges> reload
+
+permissions:
+  vanillachanges.macecontrol.bypass.craftinglimit:
+    description: Bypass crafting limits
+    default: false
+  vanillachanges.macecontrol.bypass.enchantlimit:
+    description: Bypass enchantment limits
+    default: false

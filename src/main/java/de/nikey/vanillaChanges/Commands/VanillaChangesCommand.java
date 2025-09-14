@@ -1,5 +1,6 @@
 package de.nikey.vanillaChanges.Commands;
 
+import de.nikey.vanillaChanges.Data.MaceControlData;
 import de.nikey.vanillaChanges.VanillaChanges;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -17,6 +18,8 @@ public class VanillaChangesCommand implements TabExecutor {
         if (!sender.isOp())return true;
         if (args.length == 1 && args[0].equalsIgnoreCase("reload")) {
             VanillaChanges.getPlugin().reloadConfig();
+            VanillaChanges.getPlugin().loadRecipes();
+            MaceControlData.loadConfigValues();
             sender.sendMessage(Component.text("Config was reloaded.").color(NamedTextColor.GREEN));
             return true;
         }

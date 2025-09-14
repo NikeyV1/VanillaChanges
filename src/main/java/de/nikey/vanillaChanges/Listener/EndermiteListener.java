@@ -28,7 +28,7 @@ public class EndermiteListener implements Listener {
 
         double chance = VanillaChanges.getPlugin().getConfig().getDouble("endermite.spawn-chance");
         if (ThreadLocalRandom.current().nextDouble() <= chance) {
-            event.getTo().getWorld().spawn(event.getTo(), Endermite.class, CreatureSpawnEvent.SpawnReason.CUSTOM);
+            event.getTo().getWorld().spawn(event.getTo(), Endermite.class);
         }
     }
 }
