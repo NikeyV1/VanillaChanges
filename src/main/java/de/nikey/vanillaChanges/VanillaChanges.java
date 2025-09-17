@@ -35,6 +35,7 @@ public final class VanillaChanges extends JavaPlugin {
         manager.registerEvents(new VillagerTradesListener(), this);
         manager.registerEvents(new FarmlandFeatherFallingListener(),this);
         manager.registerEvents(new MaceControlListener(), this);
+        manager.registerEvents(new HeadDropListener(), this);
 
         getCommand("vanillachanges").setExecutor(new VanillaChangesCommand());
 

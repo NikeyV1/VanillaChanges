@@ -55,6 +55,20 @@ recipes:
       A: APPLE
 
 
+  enchanted_golden_apple:
+    enabled: false
+    item: ENCHANTED_GOLDEN_APPLE
+    amount: 1
+    shape:
+      - "GGG"
+      - "GAG"
+      - "GGG"
+    ingredients:
+      G: GOLD_BLOCK
+      A: APPLE
+    replace-vanilla: false
+
+
 unbreakable-anvils: false
 
 villager:
@@ -80,6 +94,23 @@ mace-control:
     # Max enchant levels for mace
     density: 5
     wind_burst: 2
+
+head-drop:
+  enabled: false
+
+  # Chance in percent (0.0 - 100.0)
+  drop-chance: 100.0
+
+  # Only drop heads if killed by another player
+  only-pvp: true
+
+  # Custom display name for the dropped head
+  # Placeholders: {player}
+  custom-head-name: "{player}'s Head"
+
+  # Should the total deaths stat be shown in the lore?
+  show-deaths: true
+
 
 farmland:
   # Enables/disables the farmland protection feature
