@@ -8,6 +8,7 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
@@ -36,6 +37,7 @@ public final class VanillaChanges extends JavaPlugin {
         manager.registerEvents(new FarmlandFeatherFallingListener(),this);
         manager.registerEvents(new MaceControlListener(), this);
         manager.registerEvents(new HeadDropListener(), this);
+        manager.registerEvents(new DamageReductionsListener(),this);
 
         getCommand("vanillachanges").setExecutor(new VanillaChangesCommand());
 
@@ -44,6 +46,7 @@ public final class VanillaChanges extends JavaPlugin {
         MaceControlData.loadConfigValues();
 
         loadRecipes();
+        loadMultipliers();
     }
 
 
@@ -58,7 +61,23 @@ public final class VanillaChanges extends JavaPlugin {
     }
 
 
-
+    public void loadMultipliers() {
+        FileConfiguration cfg = getConfig();
+        ConfigurationSection section = cfg.getConfigurationSection("multipliers");
+        DamageReductionsListener.multipliers.clear();
+        if (section == null) return;
+        for (String key : section.getKeys(false)) {
+            try {
+                EntityDamageEvent.DamageCause cause = EntityDamageEvent.DamageCause.valueOf(key.toUpperCase());
+                double mult = section.getDouble(key, 1.0);
+                if (mult < 0) mult = 0;
+                DamageReductionsListener.multipliers.put(cause, mult);
+                getLogger().info("Loaded multiplier for " + cause + " -> " + mult);
+            } catch (IllegalArgumentException ex) {
+                getLogger().warning("Unknown damage cause in config: " + key);
+            }
+        }
+    }
 
     private void removeRecipes() {
         for (NamespacedKey key : recipeKeys.values()) {

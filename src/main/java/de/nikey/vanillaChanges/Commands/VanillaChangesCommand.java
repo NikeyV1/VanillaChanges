@@ -19,6 +19,7 @@ public class VanillaChangesCommand implements TabExecutor {
         if (args.length == 1 && args[0].equalsIgnoreCase("reload")) {
             VanillaChanges.getPlugin().reloadConfig();
             VanillaChanges.getPlugin().loadRecipes();
+            VanillaChanges.getPlugin().loadMultipliers();
             MaceControlData.loadConfigValues();
             sender.sendMessage(Component.text("Config was reloaded.").color(NamedTextColor.GREEN));
             return true;
