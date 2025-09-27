@@ -3,7 +3,11 @@ package de.nikey.vanillaChanges;
 import de.nikey.vanillaChanges.Commands.VanillaChangesCommand;
 import de.nikey.vanillaChanges.Data.MaceControlData;
 import de.nikey.vanillaChanges.Listener.*;
+import io.papermc.paper.potion.PotionMix;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
+import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
@@ -11,13 +15,18 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
+import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.ShapedRecipe;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.potion.PotionBrewer;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
+import org.bukkit.potion.PotionType;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 public final class VanillaChanges extends JavaPlugin {
     private static VanillaChanges plugin;
@@ -47,6 +56,7 @@ public final class VanillaChanges extends JavaPlugin {
 
         loadRecipes();
         loadMultipliers();
+        reloadCustomPotions();
     }
 
 
@@ -60,6 +70,93 @@ public final class VanillaChanges extends JavaPlugin {
         return plugin;
     }
 
+    public void reloadCustomPotions() {
+        PotionBrewer brewer = Bukkit.getPotionBrewer();
+        brewer.resetPotionMixes();
+        ConfigurationSection section = getConfig().getConfigurationSection("potions");
+        if (section == null) return;
+
+        for (String id : section.getKeys(false)) {
+            if (!section.getBoolean(id+".enabled",false))continue;
+            String key = id.toLowerCase(Locale.ROOT);
+
+            int amplifier = section.getInt(id + ".amplifier", 1);
+            int durationSeconds = section.getInt(id + ".duration", 120);
+            int durationTicks = durationSeconds * 20;
+            Color color = parseColor(section.getString(id + ".color", "255,255,255"));
+
+            PotionEffectType effectType;
+            PotionType basePotionType;
+            String displayName;
+            switch (key) {
+                case "strength":
+                    effectType = PotionEffectType.STRENGTH;
+                    basePotionType = PotionType.STRENGTH;
+                    displayName = "Potion of Strength";
+                    break;
+                case "speed":
+                    effectType = PotionEffectType.SPEED;
+                    basePotionType = PotionType.SWIFTNESS;
+                    displayName = "Potion of Swiftness";
+                    break;
+                default:
+                    getLogger().warning("Unknown potion key in config: " + id + " — skipping.");
+                    continue;
+            }
+
+            ItemStack customNormal = createCustomPotion(Material.POTION, displayName, effectType, amplifier, durationTicks, color);
+            ItemStack customSplash = createCustomPotion(Material.SPLASH_POTION, "Splash " + displayName, effectType, amplifier, durationTicks, color);
+
+            ItemStack base = new ItemStack(Material.POTION);
+            PotionMeta baseMeta = (PotionMeta) base.getItemMeta();
+            baseMeta.setBasePotionType(basePotionType);
+            base.setItemMeta(baseMeta);
+            RecipeChoice input = new RecipeChoice.ExactChoice(base);
+
+            ItemStack baseSplash = new ItemStack(Material.SPLASH_POTION);
+            PotionMeta baseSplashMeta = (PotionMeta) baseSplash.getItemMeta();
+            baseSplashMeta.setBasePotionType(basePotionType);
+            baseSplash.setItemMeta(baseSplashMeta);
+            RecipeChoice inputSplash = new RecipeChoice.ExactChoice(baseSplash);
+
+            RecipeChoice glowstone = new RecipeChoice.MaterialChoice(Material.GLOWSTONE_DUST);
+            RecipeChoice gunpowder = new RecipeChoice.MaterialChoice(Material.GUNPOWDER);
+
+            NamespacedKey normalKey = new NamespacedKey(this, "custom_" + key + "_normal");
+            NamespacedKey splashKey = new NamespacedKey(this, "custom_" + key + "_splash");
+            NamespacedKey defSplashKey = new NamespacedKey(this, "custom_" + key + "_def_splash");
+
+            brewer.addPotionMix(new PotionMix(normalKey, customNormal, input, glowstone));
+            brewer.addPotionMix(new PotionMix(splashKey, customSplash, inputSplash, glowstone));
+            brewer.addPotionMix(new PotionMix(defSplashKey, customSplash, new RecipeChoice.ExactChoice(customNormal), gunpowder));
+
+            getLogger().info("Registered custom potion: " + displayName + " (" + durationSeconds + "s, amp=" + amplifier + ")");
+        }
+    }
+
+    private ItemStack createCustomPotion(Material material, String name, PotionEffectType type, int amp, int durationTicks, Color color) {
+        ItemStack potion = new ItemStack(material);
+        PotionMeta meta = (PotionMeta) potion.getItemMeta();
+        meta.setColor(color);
+        meta.customName(Component.text(name).decoration(TextDecoration.ITALIC, false));
+        meta.addCustomEffect(new PotionEffect(type, durationTicks, amp), true);
+        potion.setItemMeta(meta);
+        return potion;
+    }
+
+    private Color parseColor(String rgb) {
+        try {
+            String[] p = rgb.split(",");
+            int r = Integer.parseInt(p[0].trim());
+            int g = Integer.parseInt(p[1].trim());
+            int b = Integer.parseInt(p[2].trim());
+            return Color.fromRGB(r, g, b);
+        } catch (Exception e) {
+            return Color.fromRGB(255, 255, 255);
+        }
+    }
+
+
 
     public void loadMultipliers() {
         FileConfiguration cfg = getConfig();
@@ -72,6 +169,7 @@ public final class VanillaChanges extends JavaPlugin {
                 double mult = section.getDouble(key, 1.0);
                 if (mult < 0) mult = 0;
                 DamageReductionsListener.multipliers.put(cause, mult);
+                if (mult == 1.0)continue;
                 getLogger().info("Loaded multiplier for " + cause + " -> " + mult);
             } catch (IllegalArgumentException ex) {
                 getLogger().warning("Unknown damage cause in config: " + key);

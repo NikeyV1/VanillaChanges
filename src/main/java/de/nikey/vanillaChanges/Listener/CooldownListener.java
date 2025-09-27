@@ -8,6 +8,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockPlaceEvent;
+
+import java.util.HashMap;
+import java.util.UUID;
 
 public class CooldownListener implements Listener {
     @EventHandler(ignoreCancelled = true)
@@ -36,5 +40,30 @@ public class CooldownListener implements Listener {
             int cooldown = VanillaChanges.getPlugin().getConfig().getInt("cooldowns.corusfruit.ticks");
             event.setCooldown(cooldown);
         }
+    }
+
+    private final HashMap<UUID, Long> cooldowns = new HashMap<>();
+    @EventHandler
+    public void onCobwebPlace(BlockPlaceEvent event) {
+        if (event.getBlockPlaced().getType() != Material.COBWEB) return;
+
+        UUID uuid = event.getPlayer().getUniqueId();
+        long now = System.currentTimeMillis();
+
+        if (!VanillaChanges.getPlugin().getConfig().getBoolean("cooldowns.cobweb.enabled",false)) return;
+        int cooldown = VanillaChanges.getPlugin().getConfig().getInt("cooldowns.cobweb.ticks");
+
+        if (cooldowns.containsKey(uuid)) {
+            long last = cooldowns.get(uuid);
+            long diff = now - last;
+
+            if (diff < cooldown) {
+                event.setCancelled(true);
+                return;
+            }
+        }
+
+        event.getPlayer().setCooldown(Material.COBWEB,cooldown);
+        cooldowns.put(uuid, now);
     }
 }

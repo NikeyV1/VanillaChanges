@@ -1,6 +1,6 @@
 endermite:
   enabled: false
-  spawn-chance: 0.05  # 5%
+  spawn-chance: 0.05  # 5% like default
 
 cooldowns:
   shield:
@@ -13,6 +13,9 @@ cooldowns:
     enabled: false
     ticks: 200
   corusfruit:
+    enabled: false
+    ticks: 100
+  cobweb:
     enabled: false
     ticks: 100
 
@@ -54,7 +57,6 @@ recipes:
       G: GOLD_INGOT
       A: APPLE
 
-
   enchanted_golden_apple:
     enabled: false
     item: ENCHANTED_GOLDEN_APPLE
@@ -68,6 +70,17 @@ recipes:
       A: APPLE
     replace-vanilla: false
 
+potions:
+  strength:
+    enabled: false
+    amplifier: 1
+    duration: 120
+    color: "255,215,0"
+  speed:
+    enabled: false
+    amplifier: 1
+    duration: 180
+    color: "51,235,255"
 
 unbreakable-anvils: false
 
@@ -98,12 +111,12 @@ mace-control:
 # Configure damage multipliers by DamageCause. Keys must match Bukkit's EntityDamageEvent.DamageCause enum names.
 # Values are multipliers (e.g. 0.5 = 50% damage, 2.0 = double damage).
 multipliers:
-  ENTITY_EXPLOSION: 0.5
-  BLOCK_EXPLOSION: 0.5
-  FIRE: 0.8
-  LAVA: 0.7
+  ENTITY_EXPLOSION: 1.0
+  BLOCK_EXPLOSION: 1.0
+  FIRE: 1.0
+  LAVA: 1.0
   FALL: 1.0
-  DROWNING: 0.6
+  DROWNING: 1.0
 
 head-drop:
   enabled: false
