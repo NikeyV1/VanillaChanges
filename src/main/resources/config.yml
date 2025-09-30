@@ -50,9 +50,9 @@ recipes:
     amount: 1
     replace-vanilla: true
     shape:
-      - "GGG"
+      - " G "
       - "GAG"
-      - "GGG"
+      - " G "
     ingredients:
       G: GOLD_INGOT
       A: APPLE
@@ -86,6 +86,7 @@ unbreakable-anvils: false
 
 villager:
   infinite: false
+  trade-multiplier: 1.0 # Doubles max trades
 
 mace-control:
   enabled: false

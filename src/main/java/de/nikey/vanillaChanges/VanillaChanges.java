@@ -30,6 +30,7 @@ import java.util.*;
 
 public final class VanillaChanges extends JavaPlugin {
     private static VanillaChanges plugin;
+    private VillagerTradesListener villagerTradeMultiplier;
 
     private final Map<String, NamespacedKey> recipeKeys = new HashMap<>();
 
@@ -37,12 +38,14 @@ public final class VanillaChanges extends JavaPlugin {
     public void onEnable() {
         plugin = this;
 
+        villagerTradeMultiplier = new VillagerTradesListener();
+
         PluginManager manager = Bukkit.getPluginManager();
         manager.registerEvents(new CooldownListener(),this);
         manager.registerEvents(new EndermiteListener(),this);
         manager.registerEvents(new ItemDestroyListener(), this);
         manager.registerEvents(new AnvilListener(), this);
-        manager.registerEvents(new VillagerTradesListener(), this);
+        manager.registerEvents(villagerTradeMultiplier, this);
         manager.registerEvents(new FarmlandFeatherFallingListener(),this);
         manager.registerEvents(new MaceControlListener(), this);
         manager.registerEvents(new HeadDropListener(), this);
@@ -57,8 +60,13 @@ public final class VanillaChanges extends JavaPlugin {
         loadRecipes();
         loadMultipliers();
         reloadCustomPotions();
+        villagerTradeMultiplier.applyMultiplierToAllVillagers(getConfig().getDouble("villager.trade-multiplier", 1.0));
     }
 
+    public void reloadVanillaChangesVillagerConfig() {
+        double newMultiplier = getConfig().getDouble("villager.trade-multiplier", 1.0);
+        villagerTradeMultiplier.applyMultiplierToAllVillagers(newMultiplier);
+    }
 
     @Override
     public void onDisable() {
