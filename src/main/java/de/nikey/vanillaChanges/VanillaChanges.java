@@ -60,12 +60,11 @@ public final class VanillaChanges extends JavaPlugin {
         loadRecipes();
         loadMultipliers();
         reloadCustomPotions();
-        villagerTradeMultiplier.applyMultiplierToAllVillagers(getConfig().getDouble("villager.trade-multiplier", 1.0));
+        villagerTradeMultiplier.loadMultiplier();
     }
 
     public void reloadVanillaChangesVillagerConfig() {
-        double newMultiplier = getConfig().getDouble("villager.trade-multiplier", 1.0);
-        villagerTradeMultiplier.applyMultiplierToAllVillagers(newMultiplier);
+        villagerTradeMultiplier.loadMultiplier();
     }
 
     @Override

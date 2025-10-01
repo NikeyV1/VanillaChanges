@@ -1,19 +1,17 @@
 package de.nikey.vanillaChanges.Listener;
 
 import de.nikey.vanillaChanges.VanillaChanges;
-import io.papermc.paper.event.player.PlayerPurchaseEvent;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
-import org.bukkit.World;
-import org.bukkit.entity.AbstractVillager;
-import org.bukkit.entity.Entity;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.VillagerAcquireTradeEvent;
-import org.bukkit.event.entity.VillagerReplenishTradeEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.inventory.MerchantRecipe;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
@@ -22,164 +20,103 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class VillagerTradesListener implements Listener {
-    private final NamespacedKey pdcKey;
-    private double currentMultiplier;
+    private final NamespacedKey multiplierKey = new NamespacedKey(VanillaChanges.getPlugin(), "applied_multiplier");
+    private final NamespacedKey baseUsesKey = new NamespacedKey(VanillaChanges.getPlugin(), "base_uses");
+    private double globalMultiplier;
 
     public VillagerTradesListener() {
-        this.pdcKey = new NamespacedKey(VanillaChanges.getPlugin(), "villager_trade_multiplier");
+        reloadConfig();
     }
 
-    public double getCurrentMultiplier() {
-        return currentMultiplier;
+    public void reloadConfig() {
+        loadMultiplier();
+        VanillaChanges.getPlugin().getLogger().info("Config neu geladen! Multiplikator = " + globalMultiplier);
     }
 
-    @EventHandler
-    public void onPlayerPurchase(PlayerPurchaseEvent event) {
-        if (!VanillaChanges.getPlugin().getConfig().getBoolean("villager.infinite", false)) return;
-        event.getTrade().setMaxUses(120000);
-        event.getPlayer().updateInventory();
-    }
-
-    @EventHandler
-    public void onVillagerSpawn(CreatureSpawnEvent e) {
-        if (e.getEntity() instanceof Villager villager) {
-            applyMultiplierToVillager(villager, currentMultiplier);
+    public void loadMultiplier() {
+        FileConfiguration config = VanillaChanges.getPlugin().getConfig();
+        globalMultiplier = config.getDouble("villager.trade-multiplier", 1.0);
+        if (globalMultiplier <= 0) {
+            globalMultiplier = 1.0;
         }
     }
 
     @EventHandler
-    public void onVillagerAcquireTrade(VillagerAcquireTradeEvent e) {
-        if (e.getEntity() instanceof Villager villager) {
-            MerchantRecipe recipe = e.getRecipe();
-            AbstractVillager av = e.getEntity(); // may be AbstractVillager
-            PersistentDataContainer pdc = av.getPersistentDataContainer();
+    public void onAcquireTrade(VillagerAcquireTradeEvent event) {
+        Villager villager = (Villager) event.getEntity();
+        MerchantRecipe recipe = event.getRecipe();
 
-            double stored = 1.0;
-            if (pdc.has(pdcKey, PersistentDataType.DOUBLE)) {
-                Double val = pdc.get(pdcKey, PersistentDataType.DOUBLE);
-                if (val != null) stored = val;
-            }
-
-            if (Double.compare(stored, 1.0) == 0) return;
-
-            int defaultMax = recipe.getMaxUses();
-            int newMax = Math.max(1, (int) Math.round(defaultMax * stored));
-
-            recipe.setMaxUses(newMax);
-            if (recipe.getUses() > newMax) recipe.setUses(newMax);
-
-            e.setRecipe(recipe);
-            applyMultiplierToVillager(villager, currentMultiplier);
-        }
-    }
-
-    @EventHandler
-    public void onVillagerReplenish(VillagerReplenishTradeEvent e) {
-        if (e.getEntity() instanceof Villager villager) {
-            applyMultiplierToVillager(villager, currentMultiplier);
-            Bukkit.broadcast(Component.text(e.getRecipe().getMaxUses()));
-        }
-    }
-
-    public void applyMultiplierToVillager(Villager villager, double newMultiplier) {
-        if (villager == null) return;
         PersistentDataContainer pdc = villager.getPersistentDataContainer();
-        double old = pdc.getOrDefault(pdcKey, PersistentDataType.DOUBLE, 1.0);
 
-        // If nothing changes, do nothing
-        if (Double.compare(old, newMultiplier) == 0) {
-            pdc.set(pdcKey, PersistentDataType.DOUBLE, newMultiplier);
-            Bukkit.broadcastMessage("A");
-            return;
+        List<Integer> bases = getBaseUses(pdc, villager);
+        while (bases.size() <= villager.getRecipeCount()) {
+            bases.add(recipe.getMaxUses());
         }
+        saveBaseUses(pdc, bases);
 
-        List<MerchantRecipe> newRecipes = new ArrayList<>(villager.getRecipes().size());
-        for (MerchantRecipe r : villager.getRecipes()) {
-            int currentMax = r.getMaxUses();
+        recipe.setMaxUses((int) Math.max(1, recipe.getMaxUses() * globalMultiplier));
+        event.setRecipe(recipe);
+    }
 
-            // Calculate original by removing old multiplier (if old==1 -> assume current is original)
-            int originalMax;
-            if (Double.compare(old, 1.0) == 0) {
-                originalMax = currentMax;
+    @EventHandler
+    public void onVillagerInteract(PlayerInteractEntityEvent event) {
+        if (!(event.getRightClicked() instanceof Villager villager)) return;
+
+        PersistentDataContainer pdc = villager.getPersistentDataContainer();
+        double applied = pdc.getOrDefault(multiplierKey, PersistentDataType.DOUBLE, 1.0);
+
+        if (Double.compare(applied, globalMultiplier) != 0) {
+            updateTrades(villager, pdc);
+            pdc.set(multiplierKey, PersistentDataType.DOUBLE, globalMultiplier);
+        }
+    }
+
+    private void updateTrades(Villager villager, PersistentDataContainer pdc) {
+        List<Integer> bases = getBaseUses(pdc, villager);
+        List<MerchantRecipe> updated = new ArrayList<>();
+
+        for (int i = 0; i < villager.getRecipes().size(); i++) {
+            MerchantRecipe recipe = villager.getRecipes().get(i);
+            int baseUses;
+            if (i < bases.size()) {
+                baseUses = bases.get(i);
             } else {
-                originalMax = (int) Math.round((double) currentMax / old);
-                if (originalMax < 1) originalMax = 1;
+                baseUses = recipe.getMaxUses(); // fallback
+                bases.add(baseUses);
             }
 
-            int newMax = Math.max(1, (int) Math.round(originalMax * newMultiplier));
+            MerchantRecipe copy = new MerchantRecipe(recipe.getResult(), (int) Math.max(1, baseUses * globalMultiplier));
+            copy.setVillagerExperience(recipe.getVillagerExperience());
+            copy.setIngredients(recipe.getIngredients());
+            copy.setPriceMultiplier(recipe.getPriceMultiplier());
+            copy.setUses(recipe.getUses());
 
-            // Recreate recipe preserving all important fields except maxUses which we replace
-            MerchantRecipe copy = new MerchantRecipe(
-                    r.getResult(),
-                    r.getUses(),
-                    newMax,
-                    r.hasExperienceReward(),
-                    r.getVillagerExperience(),
-                    r.getPriceMultiplier(),
-                    r.getDemand(),
-                    r.getSpecialPrice()
-            );
-            copy.setIngredients(new ArrayList<>(r.getIngredients()));
-            copy.setUses(r.getUses()); // keep current usage count
-            // other fields already set via constructor
-            newRecipes.add(copy);
-            Bukkit.broadcastMessage(String.valueOf(newMax));
+            updated.add(copy);
         }
 
-        villager.setRecipes(newRecipes);
-
-        villager.updateDemand();
-        // store new multiplier (if newMultiplier == 1.0 it's optional to remove; we keep storing 1.0 for clarity)
-        if (Double.compare(newMultiplier, 1.0) == 0) {
-            pdc.remove(pdcKey); // if you want to fully revert to "no multiplier" remove key
-        } else {
-            pdc.set(pdcKey, PersistentDataType.DOUBLE, newMultiplier);
-        }
+        villager.setRecipes(updated);
+        saveBaseUses(pdc, bases);
     }
 
-    public void removeMultiplierFromVillager(Villager villager) {
-        if (villager == null) return;
-        PersistentDataContainer pdc = villager.getPersistentDataContainer();
-        if (!pdc.has(pdcKey, PersistentDataType.DOUBLE)) return;
-        double old = pdc.get(pdcKey, PersistentDataType.DOUBLE);
-        if (Double.compare(old, 1.0) == 0) {
-            pdc.remove(pdcKey);
-            return;
+    private void saveBaseUses(PersistentDataContainer pdc, List<Integer> bases) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < bases.size(); i++) {
+            if (i > 0) sb.append(";");
+            sb.append(bases.get(i));
         }
-
-        List<MerchantRecipe> newRecipes = new ArrayList<>(villager.getRecipes().size());
-        for (MerchantRecipe r : villager.getRecipes()) {
-            int currentMax = r.getMaxUses();
-            int originalMax = (int) Math.round((double) currentMax / old);
-            if (originalMax < 1) originalMax = 1;
-
-            MerchantRecipe copy = new MerchantRecipe(
-                    r.getResult(),
-                    r.getUses(),
-                    originalMax,
-                    r.hasExperienceReward(),
-                    r.getVillagerExperience(),
-                    r.getPriceMultiplier(),
-                    r.getDemand(),
-                    r.getSpecialPrice()
-            );
-            copy.setIngredients(new ArrayList<>(r.getIngredients()));
-            copy.setUses(r.getUses());
-            newRecipes.add(copy);
-        }
-        villager.setRecipes(newRecipes);
-        pdc.remove(pdcKey);
+        pdc.set(baseUsesKey, PersistentDataType.STRING, sb.toString());
     }
 
-    public void applyMultiplierToAllVillagers(double newMultiplier) {
-        this.currentMultiplier = Math.max(1.0, newMultiplier);
-        for (World world : VanillaChanges.getPlugin().getServer().getWorlds()) {
-            for (Entity e : world.getEntities()) {
-                if (e instanceof Villager villager) {
-                    removeMultiplierFromVillager(villager);
-                    applyMultiplierToVillager(villager, this.currentMultiplier);
-                }
+    private List<Integer> getBaseUses(PersistentDataContainer pdc, Villager villager) {
+        String stored = pdc.get(baseUsesKey, PersistentDataType.STRING);
+        List<Integer> list = new ArrayList<>();
+        if (stored != null) {
+            for (String s : stored.split(";")) {
+                try {
+                    list.add(Integer.parseInt(s));
+                } catch (NumberFormatException ignored) {}
             }
         }
+        return list;
     }
 }
