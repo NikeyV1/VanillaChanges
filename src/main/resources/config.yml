@@ -1,54 +1,56 @@
 endermite:
-  enabled: false
-  spawn-chance: 0.05  # 5% like default
+  enabled: false  # Enables or disables the custom Endermite spawning behavior
+  spawn-chance: 0.05  # Chance for an Endermite to spawn when using an Ender Pearl (5% is the vanilla default)
 
 cooldowns:
   shield:
-    enabled: false
-    ticks: 200  # 10 Sekunden
+    enabled: false  # Enables these changes to be active
+    ticks: 200  # Duration of the cooldown in ticks (200 = 10 seconds)
   enderpearl:
-    enabled: false
-    ticks: 100
+    enabled: false  # Enables these changes to be active
+    ticks: 100  # 100 ticks = 5 seconds
   windcharge:
-    enabled: false
-    ticks: 200
+    enabled: false  # Enables these changes to be active
+    ticks: 200  # 10 seconds cooldown
   corusfruit:
-    enabled: false
-    ticks: 100
+    enabled: false  # Enables these changes to be active
+    ticks: 100  # 5 seconds cooldown
   cobweb:
-    enabled: false
-    ticks: 100
+    enabled: false  # Enables these changes to be active
+    ticks: 100  # 5 seconds cooldown
 
 impaling-rework:
-  # Rework changes https://minecraft.wiki/w/Impaling
-  enabled: false
-  mode: bedrock # Possible values: bedrock, combattest
+  # Reworks the "Impaling" enchantment to match Bedrock or Combat Test mechanics
+  enabled: false  # Enables or disables the impaling rework
+  mode: bedrock # Options: "bedrock" (works on all mobs) or "combattest" (works on wet targets only)
 
 item-damage:
-  explosion: true
-  fire: true
-  lava: true
-  cactus: true
-  lightning: true
+  # Determines whether certain types of damage can destroy dropped items
+  explosion: true  # Items can be destroyed by explosions
+  fire: true       # Items can be destroyed by fire
+  lava: true       # Items can be destroyed by lava
+  cactus: true     # Items can be destroyed by cactus
+  lightning: true  # Items can be destroyed by lightning
 
+# You can add your own recipes using this
 recipes:
   cobweb:
-    enabled: false
+    enabled: false  # Enables a custom crafting recipe for cobwebs
     item: COBWEB
-    replace-vanilla: true
-    amount: 1
+    replace-vanilla: true  # Overrides any existing vanilla recipe (if applicable)
+    amount: 1  # Number of items produced
     shape:
       - "SSS"
       - "S S"
       - "SSS"
     ingredients:
-      S: STRING
+      S: STRING  # Ingredient mapping
 
   golden_apple:
-    enabled: false
+    enabled: false  # Enables a custom golden apple recipe
     item: GOLDEN_APPLE
     amount: 1
-    replace-vanilla: true
+    replace-vanilla: true  # Replaces the vanilla recipe
     shape:
       - " G "
       - "GAG"
@@ -58,7 +60,7 @@ recipes:
       A: APPLE
 
   enchanted_golden_apple:
-    enabled: false
+    enabled: false  # Enables a custom enchanted golden apple recipe
     item: ENCHANTED_GOLDEN_APPLE
     amount: 1
     shape:
@@ -68,25 +70,26 @@ recipes:
     ingredients:
       G: GOLD_BLOCK
       A: APPLE
-    replace-vanilla: false
+    replace-vanilla: false  # Keeps the original vanilla recipe if it exists
 
 potions:
+  # Custom brewable potion settings (affects brewed potion duration and strength)
   strength:
-    enabled: false
-    amplifier: 1
-    duration: 120
-    color: "255,215,0"
+    enabled: false  # Enables custom duration/amplifier for Strength potions
+    amplifier: 1  # Potion level (0 = level I, 1 = level II, etc.)
+    duration: 120  # Duration in seconds
+    color: "255,215,0"  # RGB color override (optional)
   speed:
-    enabled: false
+    enabled: false  # Enables custom duration/amplifier for Speed potions
     amplifier: 1
     duration: 180
     color: "51,235,255"
 
-unbreakable-anvils: false
+unbreakable-anvils: false  # If true, anvils will never break when used
 
 villager:
-  infinite: false
-  trade-multiplier: 1.0 # Doubles max trades
+  infinite: false  # If true, villagers have unlimited trades, recommendet is to use the trademultiplier for that
+  trade-multiplier: 1.0 # Multiplies the maximum trades a villager can offer (e.g., 2.0 = double)
 
 mace-control:
   enabled: false
