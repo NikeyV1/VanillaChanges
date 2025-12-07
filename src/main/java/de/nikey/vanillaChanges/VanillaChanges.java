@@ -50,6 +50,8 @@ public final class VanillaChanges extends JavaPlugin {
         manager.registerEvents(new MaceControlListener(), this);
         manager.registerEvents(new HeadDropListener(), this);
         manager.registerEvents(new DamageReductionsListener(),this);
+        manager.registerEvents(new CustomEntityAttributesFeature(),this);
+        manager.registerEvents(new TridentListener(),this);
 
         getCommand("vanillachanges").setExecutor(new VanillaChangesCommand());
 

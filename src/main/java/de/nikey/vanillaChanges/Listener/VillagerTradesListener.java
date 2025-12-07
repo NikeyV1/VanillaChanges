@@ -1,12 +1,8 @@
 package de.nikey.vanillaChanges.Listener;
 
 import de.nikey.vanillaChanges.VanillaChanges;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -43,19 +39,31 @@ public class VillagerTradesListener implements Listener {
 
     @EventHandler
     public void onAcquireTrade(VillagerAcquireTradeEvent event) {
-        Villager villager = (Villager) event.getEntity();
-        MerchantRecipe recipe = event.getRecipe();
+        if (!(event.getEntity() instanceof Villager villager))return;
+        MerchantRecipe newRecipe = event.getRecipe();
 
         PersistentDataContainer pdc = villager.getPersistentDataContainer();
 
         List<Integer> bases = getBaseUses(pdc, villager);
-        while (bases.size() <= villager.getRecipeCount()) {
-            bases.add(recipe.getMaxUses());
+        List<MerchantRecipe> recipes = villager.getRecipes();
+        if (bases.isEmpty()) {
+            for (MerchantRecipe r : recipes) {
+                bases.add(r.getMaxUses());
+            }
+            saveBaseUses(pdc, bases);
+            pdc.set(multiplierKey, PersistentDataType.DOUBLE, 1.0);
+        } else {
+            for (int i = bases.size(); i < recipes.size(); i++) {
+                bases.add(recipes.get(i).getMaxUses());
+            }
+            saveBaseUses(pdc, bases);
         }
-        saveBaseUses(pdc, bases);
 
-        recipe.setMaxUses((int) Math.max(1, recipe.getMaxUses() * globalMultiplier));
-        event.setRecipe(recipe);
+        int newMax = (int) Math.max(1, newRecipe.getMaxUses() * globalMultiplier);
+        newRecipe.setMaxUses(newMax);
+        event.setRecipe(newRecipe);
+
+        pdc.set(multiplierKey, PersistentDataType.DOUBLE, globalMultiplier);
     }
 
     @EventHandler
@@ -85,11 +93,10 @@ public class VillagerTradesListener implements Listener {
                 bases.add(baseUses);
             }
 
-            MerchantRecipe copy = new MerchantRecipe(recipe.getResult(), (int) Math.max(1, baseUses * globalMultiplier));
+            MerchantRecipe copy = new MerchantRecipe(recipe.getResult(),recipe.getUses(), (int) Math.max(1, baseUses * globalMultiplier), true);
             copy.setVillagerExperience(recipe.getVillagerExperience());
             copy.setIngredients(recipe.getIngredients());
             copy.setPriceMultiplier(recipe.getPriceMultiplier());
-            copy.setUses(recipe.getUses());
 
             updated.add(copy);
         }

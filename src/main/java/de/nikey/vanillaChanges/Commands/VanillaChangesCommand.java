@@ -1,6 +1,7 @@
 package de.nikey.vanillaChanges.Commands;
 
 import de.nikey.vanillaChanges.Data.MaceControlData;
+import de.nikey.vanillaChanges.Listener.CustomEntityAttributesFeature;
 import de.nikey.vanillaChanges.VanillaChanges;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -22,6 +23,7 @@ public class VanillaChangesCommand implements TabExecutor {
             VanillaChanges.getPlugin().loadMultipliers();
             VanillaChanges.getPlugin().reloadCustomPotions();
             VanillaChanges.getPlugin().reloadVanillaChangesVillagerConfig();
+            CustomEntityAttributesFeature.loadConfig();
             MaceControlData.loadConfigValues();
             sender.sendMessage(Component.text("Config was reloaded.").color(NamedTextColor.GREEN));
             return true;

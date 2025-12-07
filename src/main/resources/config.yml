@@ -24,6 +24,24 @@ impaling-rework:
   enabled: false  # Enables or disables the impaling rework
   mode: bedrock # Options: "bedrock" (works on all mobs) or "combattest" (works on wet targets only)
 
+trident:
+  # VOID SAVING
+  void-saving:
+    # Should a Trident enchanted with Loyalty be saved if it falls into the void?
+    enabled: false
+    # Blocks below min height to return
+    min-y: -15
+
+  # OFFHAND RETURN
+  # Should a trident that was thrown using the offhand return to the offhand slot
+  # when the player picks it up manually?
+  offhand-return: false
+
+  # DISABLE LOYALTY PORTALS
+  # Should Tridents enchanted with Loyalty be prevented from traveling through
+  # Nether/End portals to avoid them getting lost?
+  disable-loyalty-portals: false
+
 item-damage:
   # Determines whether certain types of damage can destroy dropped items
   explosion: true  # Items can be destroyed by explosions
@@ -87,8 +105,15 @@ potions:
 
 unbreakable-anvils: false  # If true, anvils will never break when used
 
+
+entity-attributes:
+  enabled: false
+  happy_ghast:
+    flying_speed: 0.05
+
+
 villager:
-  infinite: false  # If true, villagers have unlimited trades, recommendet is to use the trademultiplier for that
+  infinite: false  # If true, villagers have unlimited trades, recommended is to use the trademultiplier for that
   trade-multiplier: 1.0 # Multiplies the maximum trades a villager can offer (e.g., 2.0 = double)
 
 mace-control:
