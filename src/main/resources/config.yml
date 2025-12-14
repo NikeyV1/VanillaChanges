@@ -112,9 +112,48 @@ entity-attributes:
     flying_speed: 0.05
 
 
+kit-limiter:
+  enabled: false
+
+  # onHit | onInventory
+  check-method: onMove
+
+  drop-items: true
+
+  limits:
+    DIAMOND: 3
+    ENDER_PEARL: 16
+    TOTEM_OF_UNDYING: 1
+
+
 villager:
-  infinite: false  # If true, villagers have unlimited trades, recommended is to use the trademultiplier for that
+  instantRestock: false  # If true, villagers have unlimited trades, recommended is to use the trademultiplier for that
   trade-multiplier: 1.0 # Multiplies the maximum trades a villager can offer (e.g., 2.0 = double)
+
+enchantment-limiter:
+  # Enables or disables the Enchantment Limiter feature
+  # Set to 'true' to enable, 'false' to disable
+  enabled: true
+
+  # ==========================================================
+  # Enchantment limits
+  # Define the maximum allowed level for each enchantment
+  # Players will not be able to equip an item with higher levels
+  # than the ones defined here.
+  # Example: If SHARPNESS is set to 5, a player will be warned and
+  # the level will be reduced to 5 if they try to equip Sharpness 6.
+  # ==========================================================
+  limits:
+    # Enchantment: Maximum allowed level
+    # These limits apply to all players globally
+    SHARPNESS: 5
+    PROTECTION: 4
+    UNBREAKING: 3
+    EFFICIENCY: 5
+
+invisible-kills:
+  enabled: true
+
 
 mace-control:
   enabled: false

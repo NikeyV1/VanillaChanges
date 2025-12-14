@@ -3,6 +3,7 @@ package de.nikey.vanillaChanges;
 import de.nikey.vanillaChanges.Commands.VanillaChangesCommand;
 import de.nikey.vanillaChanges.Data.MaceControlData;
 import de.nikey.vanillaChanges.Listener.*;
+import de.nikey.vanillaChanges.Managers.KitLimitManager;
 import io.papermc.paper.potion.PotionMix;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -52,6 +53,12 @@ public final class VanillaChanges extends JavaPlugin {
         manager.registerEvents(new DamageReductionsListener(),this);
         manager.registerEvents(new CustomEntityAttributesFeature(),this);
         manager.registerEvents(new TridentListener(),this);
+        manager.registerEvents(new EnchantmentLimiterListener(),this);
+        manager.registerEvents(new InvisibleKillsListener(),this);
+
+        KitLimitManager kitLimitManager = new KitLimitManager();
+
+         manager.registerEvents(new KitLimitListener(kitLimitManager), this);
 
         getCommand("vanillachanges").setExecutor(new VanillaChangesCommand());
 

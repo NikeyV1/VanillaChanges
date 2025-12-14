@@ -3,10 +3,13 @@ package de.nikey.vanillaChanges.Listener;
 import de.nikey.vanillaChanges.VanillaChanges;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.AbstractVillager;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.VillagerAcquireTradeEvent;
+import org.bukkit.event.entity.VillagerReplenishTradeEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.inventory.MerchantRecipe;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -19,6 +22,7 @@ public class VillagerTradesListener implements Listener {
     private final NamespacedKey multiplierKey = new NamespacedKey(VanillaChanges.getPlugin(), "applied_multiplier");
     private final NamespacedKey baseUsesKey = new NamespacedKey(VanillaChanges.getPlugin(), "base_uses");
     private double globalMultiplier;
+    public static boolean instantRestock;
 
     public VillagerTradesListener() {
         reloadConfig();
@@ -31,6 +35,7 @@ public class VillagerTradesListener implements Listener {
 
     public void loadMultiplier() {
         FileConfiguration config = VanillaChanges.getPlugin().getConfig();
+        instantRestock = config.getBoolean("villager.instantRestock");
         globalMultiplier = config.getDouble("villager.trade-multiplier", 1.0);
         if (globalMultiplier <= 0) {
             globalMultiplier = 1.0;
@@ -64,6 +69,22 @@ public class VillagerTradesListener implements Listener {
         event.setRecipe(newRecipe);
 
         pdc.set(multiplierKey, PersistentDataType.DOUBLE, globalMultiplier);
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    private void villager(VillagerReplenishTradeEvent e) {
+        if (instantRestock) {
+            AbstractVillager entity = e.getEntity();
+            if (entity instanceof Villager v) {
+                v.setRestocksToday(0);
+
+                for (MerchantRecipe r : v.getRecipes()) {
+                    if (r.getDemand() > 0) {
+                        r.setDemand(0);
+                    }
+                }
+            }
+        }
     }
 
     @EventHandler
