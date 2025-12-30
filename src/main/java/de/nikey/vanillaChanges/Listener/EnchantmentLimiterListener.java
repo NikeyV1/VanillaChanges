@@ -50,6 +50,9 @@ public class EnchantmentLimiterListener implements Listener {
 
             int max = limits.get(ench);
             if (level > max) {
+                if (max == 0) {
+                    event.getEnchantsToAdd().remove(ench);
+                }
                 event.getEnchantsToAdd().put(ench, max);
                 sendLimitMessage(event.getEnchanter(), ench, max);
             }
@@ -78,7 +81,9 @@ public class EnchantmentLimiterListener implements Listener {
             int max = limits.get(ench);
             if (level > max) {
                 meta.removeEnchant(ench);
-                meta.addEnchant(ench, max, true);
+                if (max != 0){
+                    meta.addEnchant(ench, max, true);
+                }
                 modified = true;
             }
         }
@@ -110,7 +115,9 @@ public class EnchantmentLimiterListener implements Listener {
             int max = limits.get(ench);
             if (level > max) {
                 meta.removeEnchant(ench);
-                meta.addEnchant(ench, max, true);
+                if (max != 0){
+                    meta.addEnchant(ench, max, true);
+                }
                 modified = true;
                 sendLimitMessage(player, ench, max);
             }

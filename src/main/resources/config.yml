@@ -133,7 +133,7 @@ villager:
 enchantment-limiter:
   # Enables or disables the Enchantment Limiter feature
   # Set to 'true' to enable, 'false' to disable
-  enabled: true
+  enabled: false
 
   # ==========================================================
   # Enchantment limits

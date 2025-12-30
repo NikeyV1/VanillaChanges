@@ -22,4 +22,6 @@ public class DamageReductionsListener implements Listener {
 
         event.setDamage(newDamage);
     }
+
+
 }
