@@ -15,6 +15,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 public class EnchantmentLimiterListener implements Listener {
@@ -45,19 +46,30 @@ public class EnchantmentLimiterListener implements Listener {
        =============================== */
     @EventHandler
     public void onEnchant(EnchantItemEvent event) {
-        event.getEnchantsToAdd().forEach((ench, level) -> {
-            if (!limits.containsKey(ench)) return;
+        Iterator<Map.Entry<Enchantment, Integer>> iterator =
+                event.getEnchantsToAdd().entrySet().iterator();
+
+        while (iterator.hasNext()) {
+            Map.Entry<Enchantment, Integer> entry = iterator.next();
+            Enchantment ench = entry.getKey();
+            int level = entry.getValue();
+
+            if (!limits.containsKey(ench)) continue;
 
             int max = limits.get(ench);
+
             if (level > max) {
                 if (max == 0) {
-                    event.getEnchantsToAdd().remove(ench);
+                    iterator.remove();
+                } else {
+                    entry.setValue(max);
                 }
-                event.getEnchantsToAdd().put(ench, max);
+
                 sendLimitMessage(event.getEnchanter(), ench, max);
             }
-        });
+        }
     }
+
 
     /* ===============================
        ANVIL
